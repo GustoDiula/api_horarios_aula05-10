@@ -9,22 +9,20 @@ const cors = require("cors")
 app.use(cors())
 
 
-app.get("/aulas/:Dia",(req,res)=>{
-    const Dia=req.params.Dia
+app.get("/aulas/:dia", (req, res) => {
+    const dia = req.params.dia
+    try {
+        const aulas = JSON.parse(fs.readFileSync("aulas.json", "utf8"))
+        const aulasDia = aulas.filter((aula) => aula.dia.toLowerCase() === dia.toLowerCase())
 
-    try{
-         const aula= JSON.parse(fs.readFileSync("aulas.json","utf8"))
+        const ordem = aulasDia.sort((a, b) => a.ordem - b.ordem)
 
-         const aula_dia= aula.filter((aula)=>aula.Dia.toLowerCase()===Dia.toLowerCase())
-
-         if(aula_dia.length===0){
-            res.status(400).json({resposta:"Não existe aulas existentes neste dia"})
-         }
-
-         res.status(200).json({resposta: aula_dia})
-
-    }catch(erro){
-    res.status(500).json({erro:"Erro interno do servidor"})
+        if (aulasDia.length === 0) {
+            return res.status(404).json({erro: "Nenhuma aula encontrada para este dia"})
+        }
+        res.status(200).json({resposta: aulasDia})
+    } catch (erro) {
+        res.status(500).json({erro: erro.message})
     }
 })
 
